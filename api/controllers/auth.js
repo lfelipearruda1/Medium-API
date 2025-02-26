@@ -63,7 +63,16 @@ export const login = async (req, res) => {
                 { algorithm: "HS256" }
             );
 
-            return res.status(200).json({ msg: "Usuário logado com sucesso!", token, refreshToken });
+            return res.status(200).json({ 
+                msg: "Usuário logado com sucesso!", 
+                data: { 
+                    user, 
+                    token: { 
+                        token, 
+                        refreshToken 
+                    } 
+                }
+            });            
         } catch (err) {
             console.error("Erro ao gerar token:", err);
             return res.status(500).json({ msg: "Erro no servidor, tente novamente mais tarde." });

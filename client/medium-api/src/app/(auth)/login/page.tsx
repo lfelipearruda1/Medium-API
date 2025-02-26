@@ -1,10 +1,10 @@
 'use client'
 
 import { useState } from "react";
-import axios from "axios";
-import AuthPage from "@/components/AuthPage";
 import AuthInput from "@/components/AuthInput";
 import Link from "next/link";
+import { makeRequest } from "../../../../axios";
+import { useRouter } from "next/navigation";
 
 function Login() {
 
@@ -12,11 +12,22 @@ function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
+    const router = useRouter();
+
     const handleLogin = (e:any)=>{
         e.preventDefault()
-        axios.post("http://localhost:8001/api/auth/login", { email, password }).then((res)=>{
+        makeRequest.post("auth/login", { email, password }).then((res)=>{
             console.log(res.data);
+            localStorage.setItem(
+                "medium-api:user",
+                JSON.stringify(res.data.data.user)
+            );
+            localStorage.setItem(
+                "medium-api:token",
+                JSON.stringify(res.data.data.token)
+            );
             setError('');
+            router.push("/");
         }).catch((err)=>{
             console.log(err);
             setError(err.response.data.msg);
@@ -24,7 +35,7 @@ function Login() {
     }
 
     return (
-        <AuthPage>
+        <>
                 <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">LOGIN</h1>
                 <AuthInput label="Email:" newState={setEmail}/>
                 <AuthInput label="Senha:" newState={setPassword} IsPassword/>
@@ -35,7 +46,7 @@ function Login() {
                     ENTRAR
                 </button>
                 <Link href="/register" className="text-blue-600 text-center mt-4 hover:underline">Cadastrar-se</Link>
-        </AuthPage>
+        </>
     );
 }
 

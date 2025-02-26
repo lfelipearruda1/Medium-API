@@ -1,10 +1,9 @@
 "use client";
 
-import AuthPage from "@/components/AuthPage";
 import AuthInput from "@/components/AuthInput";
-import axios from "axios";
 import Link from "next/link";
 import { useState } from "react";
+import { makeRequest } from "../../../../axios";
 
 function Register() {
     const [username, setUsername] = useState("");
@@ -16,8 +15,8 @@ function Register() {
 
     const handleRegister = (e: any) => {
         e.preventDefault();
-        axios
-            .post("http://localhost:8001/api/auth/register", {
+        makeRequest
+            .post("auth/register", {
                 username,
                 email,
                 password,
@@ -36,7 +35,7 @@ function Register() {
     };
 
     return (
-        <AuthPage>
+        <>
             <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">
                 REGISTER
             </h1>
@@ -63,7 +62,7 @@ function Register() {
             >
                 Logar
             </Link>
-        </AuthPage>
+        </>
     );
 }
 
