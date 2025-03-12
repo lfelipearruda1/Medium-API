@@ -7,6 +7,7 @@ interface IPost {
     img?: string,
     username: string,
     userImg: string,
+    created_at: string,
 }
 
 interface IUser {
@@ -15,7 +16,7 @@ interface IUser {
 }
 
 function Post(props: { post: IPost }) {
-    const { post_desc, img, username, userImg } = props.post;
+    const { post_desc, img, username, userImg, created_at } = props.post;
     const [user, setUser] = useState<IUser | undefined>(undefined);
 
     useEffect(() => {
@@ -24,6 +25,9 @@ function Post(props: { post: IPost }) {
             setUser(JSON.parse(value));
         }
     }, []);
+
+    let date = new Date(created_at);
+    let formatedDate = date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
 
     return (
         <div className="w-1/3 bg-white rounded-lg p-4 shadow-md border border-gray-200">
@@ -35,7 +39,7 @@ function Post(props: { post: IPost }) {
                 />
                 <div className="flex flex-col">
                     <span className="font-semibold text-gray-800">{username}</span>
-                    <span className="text-xs text-gray-500">06/01/2023</span>
+                    <span className="text-xs text-gray-500">{formatedDate}</span>
                 </div>
             </header>
             {post_desc && (
