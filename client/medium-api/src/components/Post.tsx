@@ -27,7 +27,10 @@ function Post(props: { post: IPost }) {
     }, []);
 
     let date = new Date(created_at);
-    let formatedDate = date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear();
+    let formatedDate = 
+        String(date.getDate()).padStart(2, '0') + "/" + 
+        String(date.getMonth() + 1).padStart(2, '0') + "/" + 
+        date.getFullYear();
 
     return (
         <div className="w-1/3 bg-white rounded-lg p-4 shadow-md border border-gray-200">

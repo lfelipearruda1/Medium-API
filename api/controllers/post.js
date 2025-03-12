@@ -1,18 +1,40 @@
-export const creatPost = (req, res)=>{
-    const {post_desc, img, userId} = req.body;
+import db from "../connect.js";
 
-    if(!post_desc && !img){
-        return res.status(422).json({msg:"O post precisar ter um texto ou uma imagem."})
+export const creatPost = async (req, res) => {
+    const { post_desc, img, userId } = req.body;
+
+    if (!post_desc && !img) {
+        return res.status(422).json({ msg: "O post precisa ter um texto ou uma imagem." });
     }
 
-    db.query("INSERT INTO posts SET ?", {post_desc, img, userId},(error)=>{
-        if (error){
-            console.log(error)
-            return res.status(500).json({msg: "Aconteceu algum erro no servidor, tente novamente mais tarde."})
-        } else{
-            return res.status(200).json({msg:"Post enviado com sucesso."})
-        }
-    })
-}
+    try {
+        await db.query(
+            `INSERT INTO posts (post_desc, img, "userId", created_at) VALUES ($1, $2, $3, NOW())`,
+            [post_desc, img, userId]
+        );
 
-export const getPost = () => {};
+        return res.status(200).json({ msg: "Post enviado com sucesso." });
+    } catch (error) {
+        console.error("Erro ao inserir post:", error);
+        return res.status(500).json({ msg: "Aconteceu algum erro no servidor, tente novamente mais tarde." });
+    }
+};
+
+export const getPost = async (req, res) => {
+    try {
+        console.log("Recebendo requisição GET /post");
+
+        const { rows } = await db.query(
+            `SELECT p.*, u.username, u."userImg" 
+            FROM posts AS p 
+            JOIN "user" AS u ON u.id = p."userId"`
+        );
+
+        console.log("Dados retornados do banco:", rows);
+        return res.status(200).json({ data: rows });
+
+    } catch (error) {
+        console.error("Erro ao buscar posts:", error);
+        return res.status(500).json({ msg: "Erro interno no servidor.", error: error.message });
+    }
+};
