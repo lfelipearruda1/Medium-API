@@ -30,7 +30,7 @@ function Login() {
             router.push("/");
         }).catch((err)=>{
             console.log(err);
-            setError(err.response.data.msg);
+            setError(err.response.msg);
         })
     }
 
