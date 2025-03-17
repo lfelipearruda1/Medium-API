@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "@tanstack/react-query": "^5.68.0",
     "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "@types/react-query": "^1.2.8"
   }
 }

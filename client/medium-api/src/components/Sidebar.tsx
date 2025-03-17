@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { FaAlignLeft, FaUserFriends } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useContext } from "react";
+import { UserContext } from "@/context/UserContext"
 
 interface IUser {
   userImg: string;
@@ -8,14 +9,8 @@ interface IUser {
 }
 
 function Sidebar() {
-  const [user, setUser] = useState<IUser | undefined>(undefined);
-
-  useEffect(() => {
-    let value = localStorage.getItem("medium-api:user");
-    if (value) {
-      setUser(JSON.parse(value));
-    }
-  }, []);
+  
+  const {user}=useContext(UserContext);
 
   return (
     <aside className="w-56 h-screen bg-[#1C2B3A] shadow-lg p-4 flex flex-col items-center text-white">

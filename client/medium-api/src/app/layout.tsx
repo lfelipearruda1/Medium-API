@@ -1,6 +1,10 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
+import { UserContextProvider } from "@/context/UserContext"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,22 +16,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "MEDIUM",
-  description: "Sua nova rede social!!!",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [queryClient] = useState(() => new QueryClient());
+
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <QueryClientProvider client={queryClient}>
+          <UserContextProvider>{children}</UserContextProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

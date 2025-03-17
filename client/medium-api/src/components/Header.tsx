@@ -2,27 +2,28 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { FaBell, FaSearch } from "react-icons/fa";
 import { TbMessageCircle } from "react-icons/tb";
+import { useMutation } from "@tanstack/react-query";
+import { makeRequest } from "../../axios";
+import { UserContext } from "@/context/UserContext";
 
 function Header() {
-  const [user, setUser] = useState({ username: "", userImg: "" });
+  const { user, setUser } = useContext(UserContext);
   const [showMenu, setShowMenu] = useState(false);
   const router = useRouter();
 
-  useEffect(() => {
-    let value = localStorage.getItem("medium-api:user");
-    if (value) {
-      setUser(JSON.parse(value));
-    }
-  }, []);
-
-  const logout = (e:any) => {
-    e.preventDefault();
-    localStorage.removeItem("medium-api:token");
-    router.push("/login");
-  };
+  const mutation = useMutation({
+    mutationFn: async () => {
+      return await makeRequest.post("auth/logout").then((res) => res.data);
+    },
+    onSuccess: () => { // 🔥 Correção de "onSucess" para "onSuccess"
+      setUser(undefined);
+      localStorage.removeItem("medium-api:user");
+      router.push("/login");
+    },
+  });
 
   return (
     <header className="w-full bg-white shadow-md flex items-center justify-between px-6 py-4">
@@ -54,16 +55,12 @@ function Header() {
             onClick={() => setShowMenu(!showMenu)}
           >
             <img
-              src={
-                user?.userImg?.length > 0
-                  ? user.userImg
-                  : "https://img.freepik.com/free-icon/user_318-159711.jpg"
-              }
+              src={user?.userImg ?? "https://img.freepik.com/free-icon/user_318-159711.jpg"}
               alt="Imagem do perfil."
               className="w-10 h-10 rounded-full border border-gray-300 object-cover"
             />
             <span className="text-gray-800 font-medium">
-              {user.username || "Usuário"}
+              {user ? user.username : "Usuário"} {/* 🔥 Correção para evitar erro de undefined */}
             </span>
           </button>
           {showMenu && (
@@ -75,7 +72,7 @@ function Header() {
                 Editar Perfil
               </Link>
               <button
-                onClick={(e) => logout(e)}
+                onClick={() => mutation.mutate()}
                 className="py-2 px-4 text-red-600 hover:bg-gray-100 rounded-md transition text-left w-full"
               >
                 Logout

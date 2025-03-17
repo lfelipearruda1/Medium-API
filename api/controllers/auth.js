@@ -134,3 +134,65 @@ export const login = async (req, res) => {
             .json({ msg: "Erro no servidor, tente novamente mais tarde." });
     }
 };
+
+export const logout = (req, res) => {
+    return res
+        .clearCookie("accessToken", { secure: true, sameSite: "none" })
+        .clearCookie("refreshToken", { secure: true, sameSite: "none" })
+        .status(200)
+        .json({ msg: "Logout efetuado com sucesso." });
+};
+
+export const refresh = (req, res) => {
+    try {
+        const authHeader = req.headers.cookie;
+        if (!authHeader) {
+            return res.status(401).json({ msg: "Nenhum token encontrado!" });
+        }
+
+        const refreshToken = authHeader
+            .split("; ")
+            .find((cookie) => cookie.startsWith("refreshToken="))
+            ?.split("=")[1];
+
+        if (!refreshToken) {
+            return res.status(401).json({ msg: "Token inválido ou ausente!" });
+        }
+
+        let payload;
+        try {
+            payload = jwt.verify(refreshToken, process.env.REFRESH);
+        } catch (error) {
+            return res.status(403).json({ msg: "Token inválido ou expirado!" });
+        }
+
+        const newRefreshToken = jwt.sign(
+            { id: payload.id },
+            process.env.REFRESH,
+            { expiresIn: "1d", algorithm: "HS256" }
+        );
+
+        const newAccessToken = jwt.sign(
+            { id: payload.id },
+            process.env.TOKEN,
+            { expiresIn: "1h", algorithm: "HS256" }
+        );
+
+        return res
+            .cookie("accessToken", newAccessToken, { 
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "Strict"
+            })
+            .cookie("refreshToken", newRefreshToken, { 
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "Strict"
+            })
+            .status(200)
+            .json({ msg: "Token atualizado com sucesso!" });
+
+    } catch (error) {
+        return res.status(500).json({ msg: "Erro no servidor, tente novamente mais tarde." });
+    }
+};
