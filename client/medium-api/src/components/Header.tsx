@@ -18,7 +18,7 @@ function Header() {
     mutationFn: async () => {
       return await makeRequest.post("auth/logout").then((res) => res.data);
     },
-    onSuccess: () => { // 🔥 Correção de "onSucess" para "onSuccess"
+    onSuccess: () => {
       setUser(undefined);
       localStorage.removeItem("medium-api:user");
       router.push("/login");
@@ -26,12 +26,12 @@ function Header() {
   });
 
   return (
-    <header className="w-full bg-white shadow-md flex items-center justify-between px-6 py-4">
+    <header className="w-full h-16 bg-white shadow-md fixed top-0 left-0 flex items-center justify-between px-6 z-50">
       <Link href="/" className="text-xl font-bold text-gray-800">
         MEDIUM
       </Link>
 
-      <div className="relative flex items-center bg-gray-100 px-3 py-2 rounded-full w-72">
+      <div className="relative flex items-center bg-gray-100 px-3 py-2 rounded-full w-80 max-w-xs md:max-w-sm lg:max-w-md">
         <input
           type="text"
           placeholder="Pesquisar..."
@@ -40,16 +40,15 @@ function Header() {
         <FaSearch className="text-gray-500" />
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
-          <button className="text-gray-600 hover:text-gray-800 transition">
-            <TbMessageCircle size={24} />
-          </button>
-          <button className="text-gray-600 hover:text-gray-800 transition">
-            <FaBell size={22} />
-          </button>
-        </div>
-        <div className="relative" onMouseLeave={() => setShowMenu(false)}>
+      <div className="flex items-center gap-5">
+        <button className="text-gray-600 hover:text-gray-800 transition">
+          <TbMessageCircle size={24} />
+        </button>
+        <button className="text-gray-600 hover:text-gray-800 transition">
+          <FaBell size={22} />
+        </button>
+
+        <div className="relative">
           <button
             className="flex items-center gap-2"
             onClick={() => setShowMenu(!showMenu)}
@@ -59,21 +58,25 @@ function Header() {
               alt="Imagem do perfil."
               className="w-10 h-10 rounded-full border border-gray-300 object-cover"
             />
-            <span className="text-gray-800 font-medium">
-              {user ? user.username : "Usuário"} {/* 🔥 Correção para evitar erro de undefined */}
+            <span className="text-gray-800 font-medium hidden md:block">
+              {user?.username || "Usuário"}
             </span>
           </button>
+
           {showMenu && (
-            <div className="absolute flex flex-col bg-white p-2 shadow-lg rounded-md gap-1 border border-gray-200 whitespace-nowrap right-[-8px] w-40">
+            <div
+              className="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg border border-gray-200 z-50"
+              onMouseLeave={() => setShowMenu(false)}
+            >
               <Link
                 href="/editar-perfil"
-                className="py-2 px-4 text-gray-700 hover:bg-gray-100 rounded-md transition"
+                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
               >
                 Editar Perfil
               </Link>
               <button
                 onClick={() => mutation.mutate()}
-                className="py-2 px-4 text-red-600 hover:bg-gray-100 rounded-md transition text-left w-full"
+                className="block w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
               >
                 Logout
               </button>

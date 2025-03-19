@@ -3,7 +3,6 @@
 import Feed from "@/components/Feed";
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -41,11 +40,15 @@ export default function Home() {
   }, [isSuccess, data, router]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-zinc-100">
+    <main className="flex h-screen bg-zinc-100">
       <Header />
-      <div className="w-full flex">
-        <Sidebar />
-        <div className="flex-1 p-6">
+
+      <div className="flex w-full pt-16">
+        <div className="w-64 fixed left-0 top-16 h-full">
+          <Sidebar />
+        </div>
+
+        <div className="flex-1 ml-64 mt-16 p-6 overflow-y-auto h-[calc(100vh-64px)]">
           <Feed />
         </div>
       </div>
