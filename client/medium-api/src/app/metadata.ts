@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "MEDIUM",
+  title: "API",
   description: "Sua nova rede social!!!",
 };

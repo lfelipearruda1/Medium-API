@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Post from "./Post";
 import { makeRequest } from "../../axios";
+import Share from "./Share";
 
 interface IPost {
     id: number,
@@ -25,6 +26,7 @@ function Feed(){
 
     return(
         <div className="flex flex-col items-center gap-6">
+           <Share />
            {posts?.map((post, id)=>{
                 return( 
                     <Post post={post} key={id}/>

@@ -28,7 +28,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoading && isError) {
-      console.error("Erro na autenticação:", error);
       router.push("/login");
     }
   }, [isLoading, isError, error, router]);
