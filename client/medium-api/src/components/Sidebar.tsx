@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { FaAlignLeft, FaUserFriends } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "@/context/UserContext";
 
 interface IUser {
   userImg: string;
@@ -8,19 +11,19 @@ interface IUser {
 }
 
 function Sidebar() {
-  const [user, setUser] = useState<IUser | undefined>(undefined);
+  const { user, setUser } = useContext(UserContext);
 
   useEffect(() => {
-    let value = localStorage.getItem("medium-api:user");
+    const value = localStorage.getItem("medium-api:user");
     if (value) {
       setUser(JSON.parse(value));
     }
   }, []);
 
   return (
-    <aside className="w-56 h-screen bg-[#1C2B3A] shadow-lg p-4 flex flex-col items-center text-white">
-      <nav className="w-full flex flex-col gap-6 font-semibold">
-        <Link href="" className="flex items-center gap-4 pb-6 w-full hover:bg-[#253B50] p-3 rounded-lg transition">
+    <aside className="w-56 h-screen bg-[#1C2B3A] shadow-lg px-4 pt-12 flex flex-col items-center text-white">
+      <nav className="w-full flex flex-col items-center font-semibold">
+        <div className="flex flex-col items-center gap-4 pb-10">
           <img
             src={
               user?.userImg
@@ -28,24 +31,29 @@ function Sidebar() {
                 : "https://img.freepik.com/free-icon/user_318-159711.jpg"
             }
             alt="Imagem do perfil."
-            className="w-10 h-10 rounded-full border border-gray-300 object-cover"
+            className="w-16 h-16 rounded-full border-2 border-white object-cover shadow-md"
           />
-          <span className="text-lg">{user?.username || "Usuário"}</span>
-        </Link>
-        <Link
-          href=""
-          className="flex items-center gap-3 text-lg p-3 w-full hover:bg-[#253B50] rounded-lg transition"
-        >
-          <FaUserFriends className="text-white w-6 h-6" />
-          Amigos
-        </Link>
-        <Link
-          href=""
-          className="flex items-center gap-3 text-lg p-3 w-full hover:bg-[#253B50] rounded-lg transition"
-        >
-          <FaAlignLeft className="text-white w-6 h-6" />
-          Feed
-        </Link>
+          <span className="text-lg font-semibold text-white">
+            {user?.username || "Usuário"}
+          </span>
+        </div>
+
+        <div className="w-full flex flex-col gap-3">
+          <Link
+            href=""
+            className="flex items-center gap-4 text-lg px-5 py-4 hover:bg-[#253B50] rounded-lg transition w-full"
+          >
+            <FaUserFriends className="text-white w-6 h-6" />
+            Amigos
+          </Link>
+          <Link
+            href=""
+            className="flex items-center gap-4 text-lg px-5 py-4 hover:bg-[#253B50] rounded-lg transition w-full"
+          >
+            <FaAlignLeft className="text-white w-6 h-6" />
+            Feed
+          </Link>
+        </div>
       </nav>
     </aside>
   );

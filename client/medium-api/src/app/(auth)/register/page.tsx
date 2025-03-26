@@ -43,7 +43,7 @@ function Register() {
             <AuthInput label="Email:" newState={setEmail} />
             <AuthInput label="Senha:" newState={setPassword} IsPassword />
             <AuthInput
-                label="Comfirme a sua senha:"
+                label="Confirme a sua senha:"
                 newState={setConfirmPassword}
                 IsPassword
             />
