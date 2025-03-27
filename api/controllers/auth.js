@@ -92,41 +92,35 @@ export const logout = (req, res) => {
       .json({ msg: "Logout efetuado com sucesso." });
   };
 
-export const refresh = (req, res)=>{
-    const authHeader = req.headers.cookie?.split("; ")[1];
-    const refresh = authHeader&& authHeader.split("=")[1];
-
-    const tokenStruct = refresh.split('.')[1];
-    const payload = atob(tokenStruct);
-
-        try {
-            const refreshToken = jwt.sign(
-                { 
-                    exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, 
-                    id: JSON.parse(payload).id,
-                },
-                process.env.REFRESH,
-                { algorithm: "HS256" }
-            );
-
-            const token = jwt.sign(
-                { 
-                    exp: Math.floor(Date.now() / 1000) + 3600, 
-                    id: JSON.parse(payload).id,
-                },
-                process.env.TOKEN,
-                { algorithm: "HS256" }
-            );
-
-            return res
-                .cookie("accessToken", token, { httpOnly: true })
-                .cookie("refreshToken", refreshToken, { httpOnly: true })
-                .status(200)
-                .json({ 
-                    msg: "Token atualizado com sucesso!", 
-                });            
-        } catch (err) {
-            console.error("Erro ao gerar token:", err);
-            return res.status(500).json({ msg: "Erro no servidor, tente novamente mais tarde." });
-        }
-}
+  export const refresh = (req, res) => {
+    const refresh = req.cookies.refreshToken;
+  
+    if (!refresh) {
+      return res.status(401).json({ msg: "Acesso negado." });
+    }
+  
+    try {
+      const decoded = jwt.verify(refresh, process.env.REFRESH);
+  
+      const newAccessToken = jwt.sign(
+        { id: decoded.id },
+        process.env.TOKEN,
+        { expiresIn: "1h" }
+      );
+  
+      const newRefreshToken = jwt.sign(
+        { id: decoded.id },
+        process.env.REFRESH,
+        { expiresIn: "1d" }
+      );
+  
+      return res
+        .cookie("accessToken", newAccessToken, { httpOnly: true })
+        .cookie("refreshToken", newRefreshToken, { httpOnly: true })
+        .status(200)
+        .json({ msg: "Token atualizado com sucesso!" });
+    } catch (err) {
+      console.error("Erro ao atualizar token:", err);
+      return res.status(403).json({ msg: "Token Inválido." });
+    }
+  };
