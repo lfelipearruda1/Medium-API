@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import Post from "./Post";
 import { makeRequest } from "../../axios";
 import Share from "./Share";
+import { useQuery } from "@tanstack/react-query";
 
 interface IPost {
   id: number;
@@ -13,32 +13,27 @@ interface IPost {
 }
 
 function Feed() {
-  const [posts, setPosts] = useState<IPost[] | undefined>(undefined);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    makeRequest
-      .get("post/")
-      .then((res) => {
-        setPosts(res.data.data);
-      })
-      .catch((err) => {
-        console.error("Erro ao carregar posts:", err);
-        if (err.response?.data?.msg) {
-          setError(err.response.data.msg);
-        } else {
-          setError("Erro inesperado ao carregar os posts.");
-        }
-      });
-  }, []);
+  const {
+    data: posts,
+    isLoading,
+    error,
+  } = useQuery<IPost[]>({
+    queryKey: ["posts"],
+    queryFn: () =>
+      makeRequest.get("post/").then((res) => res.data.data),
+  });
 
   return (
     <div className="flex flex-col items-center gap-6">
       <Share />
-      {error ? (
-        <div className="text-red-500 font-semibold">{error}</div>
+      {isLoading ? (
+        <span>Carregando...</span>
+      ) : error ? (
+        <div className="text-red-500 font-semibold">
+          Erro ao carregar posts.
+        </div>
       ) : (
-        posts?.map((post, id) => <Post post={post} key={id} />)
+        posts?.slice().reverse().map((post) => <Post post={post} key={post.id} />)
       )}
     </div>
   );
