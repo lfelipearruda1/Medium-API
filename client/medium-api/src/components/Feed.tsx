@@ -33,7 +33,7 @@ function Feed() {
           Erro ao carregar posts.
         </div>
       ) : (
-        posts?.slice().reverse().map((post) => <Post post={post} key={post.id} />)
+        posts?.map((post) => <Post post={post} key={post.id} />)
       )}
     </div>
   );

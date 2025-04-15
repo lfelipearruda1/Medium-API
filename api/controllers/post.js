@@ -25,9 +25,10 @@ export const getPost = async (req, res) => {
         console.log("Recebendo requisição GET /post");
 
         const { rows } = await db.query(
-            `SELECT p.*, u.username, u."userImg" 
-            FROM posts AS p 
-            JOIN "user" AS u ON u.id = p."userId"`
+            `SELECT p.*, u.username, u."userImg"
+            FROM posts AS p
+            JOIN "user" AS u ON u.id = p."userId"
+            ORDER BY created_at DESC`
         );
 
         console.log("Dados retornados do banco:", rows);
