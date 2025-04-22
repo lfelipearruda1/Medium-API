@@ -31,6 +31,13 @@ interface IComments {
     created_at: string;
 }
 
+interface ILikes {
+    id: number;
+    likes_user_id: number;
+    username: string;
+    likes_post_id: number;
+}
+
 interface ICreateComment {
     comment_desc: string;
     comment_user_id: number | undefined;
@@ -42,6 +49,7 @@ function Post(props: { post: IPost }) {
     const [user, setUser] = useState<IUser | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showCommentsBox, setShowCommentsBox] = useState(false);
+    const [liked, setLiked] = useState(false);
     const [comment_desc, setComment_desc] = useState('');
     const [modalCommentDesc, setModalCommentDesc] = useState('');
     const queryClient = useQueryClient();
@@ -53,13 +61,64 @@ function Post(props: { post: IPost }) {
         }
     }, []);
 
-    const { data } = useQuery<IComments[] | undefined>({
+    // LIKES QUERY
+    
+    const likesQuery = useQuery<ILikes[] | undefined>({
+        queryKey: ['likes', id],
+        queryFn: () => makeRequest.get('likes/?likes_post_id=' + id).then((res) => {
+            res.data.data.map((like:ILikes)=>{
+                if (like.likes_user_id == user?.id){
+                    return setLiked(true)
+                }
+                else{
+                    setLiked(false);
+                }
+            })
+            return res.data.data;
+        }),
+        enabled: !!id
+    });
+
+    if (likesQuery.error){
+        console.log(likesQuery.error);
+    }
+
+    const likesMutation = useMutation({
+        mutationFn: async (newLikes: {}) => {
+            if(liked){
+                return await makeRequest.delete(`likes/?likes_post_id=${id}&likes_user_id=${user?.id}`).then((res) => res.data);
+            } else{
+                return await makeRequest.post("likes/", newLikes).then((res) => res.data);
+            }
+
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['likes', id] });
+        }
+    });
+
+    const shareLikes = () => {
+        if (!comment_desc.trim()) return;
+        likesMutation.mutate({
+            likes_user_id: user?.id,
+            likes_post_id: id
+        });
+    };
+
+
+    // COMMENTS QUERY
+
+    const commentQuery = useQuery<IComments[] | undefined>({
         queryKey: ['comments', id],
         queryFn: () => makeRequest.get('comment/?post_id=' + id).then((res) => res.data.data),
         enabled: !!id
     });
 
-    const mutation = useMutation({
+    if (commentQuery.error){
+        console.log(commentQuery.error);
+    }
+
+    const commentsMutation = useMutation({
         mutationFn: async (newComment: ICreateComment) => {
             return await makeRequest.post("comment/", newComment).then((res) => res.data);
         },
@@ -70,7 +129,7 @@ function Post(props: { post: IPost }) {
 
     const shareComment = () => {
         if (!comment_desc.trim()) return;
-        mutation.mutate({
+        commentsMutation.mutate({
             comment_desc,
             comment_user_id: user?.id,
             post_id: id
@@ -80,7 +139,7 @@ function Post(props: { post: IPost }) {
 
     const shareModalComment = () => {
         if (!modalCommentDesc.trim()) return;
-        mutation.mutate({
+        commentsMutation.mutate({
             comment_desc: modalCommentDesc,
             comment_user_id: user?.id,
             post_id: id
@@ -123,8 +182,8 @@ function Post(props: { post: IPost }) {
                         <FaThumbsUp className="text-blue-500 w-4 h-4" />
                         <span>36 mil</span>
                     </div>
-                    {data && data.length > 0 && (
-                        <span>{data.length} {data.length === 1 ? 'comentário' : 'comentários'}</span>
+                    {commentQuery.data && commentQuery.data.length > 0 && (
+                        <span>{commentQuery.data.length} {commentQuery.data.length === 1 ? 'comentário' : 'comentários'}</span>
                     )}
                 </div>
 
@@ -210,8 +269,8 @@ function Post(props: { post: IPost }) {
                         </div>
 
                         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
-                            {data?.length ? (
-                                data.map((comment) => (
+                            {commentQuery.data?.length ? (
+                                commentQuery.data.map((comment) => (
                                     <Comment key={comment.id} comment={comment} />
                                 ))
                             ) : (
