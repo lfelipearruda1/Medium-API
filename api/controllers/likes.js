@@ -5,7 +5,7 @@ export const addLikes = async (req, res) => {
 
   try {
     await db.query(
-      `INSERT INTO "like" (likes_user_id, likes_post_id, "createdAt") VALUES ($1, $2, NOW())`,
+      `INSERT INTO "like" (likes_user_id, likes_post_id) VALUES ($1, $2)`,
       [likes_user_id, likes_post_id]
     );
 
@@ -41,7 +41,7 @@ export const getLikes = async (req, res) => {
 
   try {
     const { rows } = await db.query(
-      `SELECT l.*, u.username
+      `SELECT l.*, u.username, u.userImg
        FROM "like" AS l
        JOIN "user" AS u ON u.id = l.likes_user_id
        WHERE l.likes_post_id = $1`,

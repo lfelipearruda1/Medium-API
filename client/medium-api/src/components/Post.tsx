@@ -35,6 +35,7 @@ interface ILikes {
     id: number;
     likes_user_id: number;
     username: string;
+    userImg: string;
     likes_post_id: number;
 }
 
@@ -50,6 +51,7 @@ function Post(props: { post: IPost }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showCommentsBox, setShowCommentsBox] = useState(false);
     const [liked, setLiked] = useState(false);
+    const [showLikesModal, setShowLikesModal] = useState(false);
     const [comment_desc, setComment_desc] = useState('');
     const [modalCommentDesc, setModalCommentDesc] = useState('');
     const queryClient = useQueryClient();
@@ -61,36 +63,30 @@ function Post(props: { post: IPost }) {
         }
     }, []);
 
-    // LIKES QUERY
-    
     const likesQuery = useQuery<ILikes[] | undefined>({
         queryKey: ['likes', id],
-        queryFn: () => makeRequest.get('likes/?likes_post_id=' + id).then((res) => {
-            res.data.data.map((like:ILikes)=>{
-                if (like.likes_user_id == user?.id){
-                    return setLiked(true)
+        queryFn: () =>
+            makeRequest.get('likes/?likes_post_id=' + id).then((res) => {
+                const data = res.data.data;
+                if (user?.id) {
+                    const hasLiked = data.some((like: ILikes) => like.likes_user_id === user.id);
+                    setLiked(hasLiked);
                 }
-                else{
-                    setLiked(false);
-                }
-            })
-            return res.data.data;
-        }),
-        enabled: !!id
+                return data;
+            }),
+        enabled: !!id && !!user?.id
     });
-
-    if (likesQuery.error){
-        console.log(likesQuery.error);
-    }
 
     const likesMutation = useMutation({
         mutationFn: async (newLikes: {}) => {
-            if(liked){
-                return await makeRequest.delete(`likes/?likes_post_id=${id}&likes_user_id=${user?.id}`).then((res) => res.data);
-            } else{
+            if (liked) {
+                return await makeRequest.delete(`likes/?likes_post_id=${id}&likes_user_id=${user?.id}`).then((res) => {
+                    setLiked(false);
+                    return res.data;
+                });
+            } else {
                 return await makeRequest.post("likes/", newLikes).then((res) => res.data);
             }
-
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['likes', id] });
@@ -98,25 +94,17 @@ function Post(props: { post: IPost }) {
     });
 
     const shareLikes = () => {
-        if (!comment_desc.trim()) return;
         likesMutation.mutate({
             likes_user_id: user?.id,
             likes_post_id: id
-        });
+        }); 
     };
-
-
-    // COMMENTS QUERY
 
     const commentQuery = useQuery<IComments[] | undefined>({
         queryKey: ['comments', id],
         queryFn: () => makeRequest.get('comment/?post_id=' + id).then((res) => res.data.data),
         enabled: !!id
     });
-
-    if (commentQuery.error){
-        console.log(commentQuery.error);
-    }
 
     const commentsMutation = useMutation({
         mutationFn: async (newComment: ICreateComment) => {
@@ -178,22 +166,36 @@ function Post(props: { post: IPost }) {
                 <hr className="border-t border-gray-200 my-3" />
 
                 <div className="flex items-center justify-between text-sm text-gray-500 mt-1 mb-2 px-1">
-                    <div className="flex items-center gap-1">
-                        <FaThumbsUp className="text-blue-500 w-4 h-4" />
-                        <span>36 mil</span>
-                    </div>
+                    {likesQuery.data && likesQuery.data.length > 0 && (
+                        <div
+                            className="flex items-center gap-1 text-blue-500 cursor-pointer"
+                            onClick={() => setShowLikesModal(true)}
+                        >
+                            <FaThumbsUp className="w-4 h-4" />
+                            <span>{likesQuery.data.length}</span>
+                        </div>
+                    )}
+
                     {commentQuery.data && commentQuery.data.length > 0 && (
-                        <span>{commentQuery.data.length} {commentQuery.data.length === 1 ? 'comentário' : 'comentários'}</span>
+                        <span>
+                            {commentQuery.data.length} {commentQuery.data.length === 1 ? "comentário" : "comentários"}
+                        </span>
                     )}
                 </div>
 
                 <hr className="border-t border-gray-200 my-2" />
 
                 <div className="flex justify-around text-gray-600 text-sm font-medium">
-                    <button className="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition w-full justify-center">
+                    <button
+                        className={`flex items-center gap-2 py-2 px-3 rounded transition w-full justify-center ${
+                            liked ? 'text-blue-600 bg-blue-50 hover:bg-blue-100' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                        onClick={shareLikes}
+                    >
                         <FaThumbsUp className="w-4 h-4" />
                         Curtir
                     </button>
+
                     <button
                         className="flex items-center gap-2 py-2 px-3 rounded hover:bg-gray-100 transition w-full justify-center"
                         onClick={() => setShowCommentsBox(true)}
@@ -225,45 +227,55 @@ function Post(props: { post: IPost }) {
             </div>
 
             {isModalOpen && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50"
-                    onClick={() => setIsModalOpen(false)}
-                >
-                    <div
-                        className="relative w-[95vw] max-h-[90vh] flex justify-center items-start"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50" onClick={() => setIsModalOpen(false)}>
+                    <div className="relative w-[95vw] max-h-[90vh] flex justify-center items-start" onClick={(e) => e.stopPropagation()}>
                         <img
                             src={`/upload/${img}`}
                             alt="Imagem em tela cheia"
                             className="w-full h-auto max-h-[90vh] rounded-md object-contain shadow-lg"
                         />
-                        <button
-                            className="absolute top-3 right-3 text-white text-3xl font-bold hover:text-gray-300 transition z-20"
-                            onClick={() => setIsModalOpen(false)}
-                        >
+                        <button className="absolute top-3 right-3 text-white text-3xl font-bold hover:text-gray-300 transition z-20" onClick={() => setIsModalOpen(false)}>
                             &times;
                         </button>
                     </div>
                 </div>
             )}
 
+            {showLikesModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center" onClick={() => setShowLikesModal(false)}>
+                    <div className="bg-white w-full max-w-sm rounded-xl shadow-lg border border-gray-200 p-6" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-lg font-semibold text-gray-800">Curtido por</h2>
+                            <button className="text-xl font-bold text-gray-500 hover:text-gray-700" onClick={() => setShowLikesModal(false)}>
+                                &times;
+                            </button>
+                        </div>
+                        <div className="max-h-[60vh] overflow-y-auto space-y-3">
+                            {likesQuery.data?.length ? (
+                                likesQuery.data.map((like) => (
+                                    <div key={like.id} className="flex items-center gap-3">
+                                        <img
+                                            src={like.userImg || `https://ui-avatars.com/api/?name=${encodeURIComponent(like.username)}&background=random`}
+                                            alt={like.username}
+                                            className="w-9 h-9 rounded-full object-cover border"
+                                        />
+                                        <span className="text-gray-800">{like.username}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-gray-500">Ainda não há curtidas.</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showCommentsBox && (
-                <div
-                    className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center"
-                    onClick={() => setShowCommentsBox(false)}
-                >
-                    <div
-                        className="bg-white w-full max-w-lg h-[80vh] rounded-xl shadow-lg border border-gray-200 flex flex-col"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center" onClick={() => setShowCommentsBox(false)}>
+                    <div className="bg-white w-full max-w-lg h-[80vh] rounded-xl shadow-lg border border-gray-200 flex flex-col" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-between items-center px-6 py-4 border-b">
                             <h2 className="text-lg font-semibold text-gray-800">Comentários</h2>
-                            <button
-                                className="text-xl font-bold text-gray-500 hover:text-gray-700"
-                                onClick={() => setShowCommentsBox(false)}
-                            >
+                            <button className="text-xl font-bold text-gray-500 hover:text-gray-700" onClick={() => setShowCommentsBox(false)}>
                                 &times;
                             </button>
                         </div>
