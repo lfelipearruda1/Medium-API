@@ -27,7 +27,7 @@ function Header() {
 
   return (
     <header className="w-full bg-white shadow-md flex items-center justify-between px-6 py-4">
-      <Link href="/" className="text-3xl font-bold text-gray-800">
+      <Link href="/main" className="text-3xl font-bold text-gray-800">
         API
       </Link>
 

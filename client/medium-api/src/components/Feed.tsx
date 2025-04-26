@@ -1,7 +1,6 @@
+"use client";
+
 import Post from "./Post";
-import { makeRequest } from "../../axios";
-import Share from "./Share";
-import { useQuery } from "@tanstack/react-query";
 
 interface IPost {
   id: number;
@@ -10,30 +9,20 @@ interface IPost {
   username: string;
   userImg: string;
   created_at: string;
+  userId: number;
 }
 
-function Feed() {
-  const {
-    data: posts,
-    isLoading,
-    error,
-  } = useQuery<IPost[]>({
-    queryKey: ["posts"],
-    queryFn: () =>
-      makeRequest.get("post/").then((res) => res.data.data),
-  });
-
+function Feed(props: { post: IPost[] | undefined }) {
   return (
     <div className="flex flex-col items-center gap-6">
-      <Share />
-      {isLoading ? (
-        <span>Carregando...</span>
-      ) : error ? (
-        <div className="text-red-500 font-semibold">
-          Erro ao carregar posts.
-        </div>
+      {props.post ? (
+        props.post.length > 0 ? (
+          props.post.map((post) => <Post post={post} key={post.id} />)
+        ) : (
+          <div className="text-gray-500 font-semibold">Nenhum post encontrado.</div>
+        )
       ) : (
-        posts?.map((post) => <Post post={post} key={post.id} />)
+        <div className="text-red-500 font-semibold">Erro ao carregar posts.</div>
       )}
     </div>
   );

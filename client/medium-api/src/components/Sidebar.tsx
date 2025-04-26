@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { FaAlignLeft, FaUserFriends } from "react-icons/fa";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { UserContext } from "@/context/UserContext";
 
 interface IUser {
   userImg: string;
   username: string;
+  id?: number;
 }
 
 function Sidebar() {
@@ -23,7 +24,10 @@ function Sidebar() {
   return (
     <aside className="w-56 h-screen bg-[#1C2B3A] shadow-lg px-4 pt-12 flex flex-col items-center text-white">
       <nav className="w-full flex flex-col items-center font-semibold">
-        <div className="flex flex-col items-center gap-4 pb-10">
+        <Link
+          href={`/profile?id=${user?.id}`}
+          className="flex flex-col items-center gap-4 pb-10"
+        >
           <img
             src={
               user?.userImg
@@ -36,18 +40,18 @@ function Sidebar() {
           <span className="text-lg font-semibold text-white">
             {user?.username || "Usuário"}
           </span>
-        </div>
+        </Link>
 
         <div className="w-full flex flex-col gap-3">
           <Link
-            href=""
+            href="/friends"
             className="flex items-center gap-4 text-lg px-5 py-4 hover:bg-[#253B50] rounded-lg transition w-full"
           >
             <FaUserFriends className="text-white w-6 h-6" />
             Amigos
           </Link>
           <Link
-            href=""
+            href="/"
             className="flex items-center gap-4 text-lg px-5 py-4 hover:bg-[#253B50] rounded-lg transition w-full"
           >
             <FaAlignLeft className="text-white w-6 h-6" />

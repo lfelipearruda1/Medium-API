@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { FaPaperPlane, FaRegComment, FaThumbsUp } from "react-icons/fa";
 import moment from "moment";
@@ -5,6 +7,7 @@ import 'moment/locale/pt-br';
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { makeRequest } from "../../axios";
 import Comment from "./Comment";
+import Link from "next/link";
 
 interface IPost {
     id: number;
@@ -13,6 +16,7 @@ interface IPost {
     username: string;
     userImg: string;
     created_at: string;
+    userId: number;
 }
 
 interface IUser {
@@ -46,7 +50,7 @@ interface ICreateComment {
 }
 
 function Post(props: { post: IPost }) {
-    const { post_desc, img, username, userImg, created_at, id } = props.post;
+    const { post_desc, img, username, userImg, created_at, id, userId } = props.post;
     const [user, setUser] = useState<IUser | undefined>(undefined);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showCommentsBox, setShowCommentsBox] = useState(false);
@@ -138,17 +142,25 @@ function Post(props: { post: IPost }) {
     return (
         <>
             <div className="w-full max-w-xl bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                <header className="flex gap-3 pb-4 border-b items-center">
-                    <img
-                        className="w-10 h-10 rounded-full border object-cover"
-                        src={userImg || "https://img.freepik.com/free-icon/user_318-159711.jpg"}
-                        alt="Imagem do usuário que fez o post."
-                    />
-                    <div className="flex flex-col">
-                        <span className="font-semibold text-gray-800">{username}</span>
-                        <span className="text-xs text-gray-400">{moment(created_at).fromNow()}</span>
-                    </div>
-                </header>
+            <Link href={`/profile?id=${userId}`} className="flex gap-3 pb-4 border-b items-center">
+            <img
+                className="w-10 h-10 rounded-full border object-cover"
+                src={
+                userImg && userImg.trim()
+                    ? userImg
+                    : "https://img.freepik.com/free-icon/user_318-159711.jpg"
+                }
+                alt={`Imagem de ${username}`}
+            />
+            <div className="flex flex-col">
+                <span className="font-semibold text-gray-800 hover:underline">
+                {username}
+                </span>
+                <span className="text-xs text-gray-400">
+                {moment(created_at).fromNow()}
+                </span>
+            </div>
+            </Link>
 
                 {post_desc && (
                     <p className="py-4 text-gray-800 text-base">{post_desc}</p>
