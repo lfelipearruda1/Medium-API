@@ -2,11 +2,11 @@
 
 import Header from "@/components/Header";
 import Sidebar from "@/components/Sidebar";
+import FriendShipTable from "@/components/FriendshipTable";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, ReactNode } from "react";
 import { makeRequest } from "../../../axios";
-import FriendShipTable from "@/components/FriendshipTable";
 
 export default function MainHome({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -43,7 +43,8 @@ export default function MainHome({ children }: { children: ReactNode }) {
         <div className="ml-64 flex-1 p-6">
           {children}
         </div>
-        <FriendShipTable/>
+
+        <FriendShipTable />
       </div>
     </main>
   );

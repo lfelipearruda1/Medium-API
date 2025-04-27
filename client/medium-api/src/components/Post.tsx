@@ -96,7 +96,7 @@ function Post(props: { post: IPost }) {
         },
         onError: (error: any) => {
             if (error?.response?.status === 409) {
-                alert("Você já curtiu este post!"); // ou usar toast
+                alert("Você já curtiu este post!"); 
             } else {
                 alert("Erro ao curtir, tente novamente.");
             }

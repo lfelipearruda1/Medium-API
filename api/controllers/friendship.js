@@ -32,7 +32,7 @@ export const deleteFriendship = (req, res) => {
                     msg: "Aconteceu algum erro no servidor, tente novamente mais tarde",
                 });
             } else {
-                return res.status(200).json({ msg: "Você não está mais seguindo esse usuário agora!" });
+                return res.status(200).json({ msg: "Você não está mais seguindo esse usuário!" });
             }
         }
     );
@@ -40,9 +40,9 @@ export const deleteFriendship = (req, res) => {
 
 export const getFriendship = (req, res) => {
     db.query(
-        `SELECT f.*, u.username, u.userImg 
-         FROM friendship AS f 
-         JOIN "user" AS u ON u.id = f.followed_id 
+        `SELECT f.id, f.follower_id, f.followed_id, u.username, u."userImg"
+         FROM friendship AS f
+         JOIN "user" AS u ON u.id = f.followed_id
          WHERE f.follower_id = $1`,
         [req.query.follower_id],
         (error, data) => {
@@ -51,8 +51,8 @@ export const getFriendship = (req, res) => {
                 return res.status(500).json({
                     msg: "Aconteceu algum erro no servidor, tente novamente mais tarde",
                 });
-            } else if (data) {
-                return res.status(200).json({ data });
+            } else {
+                return res.status(200).json({ data: data.rows });
             }
         }
     );
