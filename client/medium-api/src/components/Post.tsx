@@ -69,39 +69,43 @@ function Post(props: { post: IPost }) {
 
     const likesQuery = useQuery<ILikes[] | undefined>({
         queryKey: ['likes', id],
-        queryFn: () =>
-            makeRequest.get('likes/?likes_post_id=' + id).then((res) => {
-                const data = res.data.data;
-                if (user?.id) {
-                    const hasLiked = data.some((like: ILikes) => like.likes_user_id === user.id);
-                    setLiked(hasLiked);
-                }
-                return data;
-            }),
-        enabled: !!id && !!user?.id
+        queryFn: () => makeRequest.get('likes/?likes_post_id=' + id).then((res) => res.data.data),
+        enabled: !!id
     });
 
+    useEffect(() => {
+        if (likesQuery.data && user?.id) {
+            const hasLiked = likesQuery.data.some((like: ILikes) => like.likes_user_id === user.id);
+            setLiked(hasLiked);
+        }
+    }, [likesQuery.data, user]);
+
     const likesMutation = useMutation({
-        mutationFn: async (newLikes: {}) => {
+        mutationFn: async () => {
             if (liked) {
-                return await makeRequest.delete(`likes/?likes_post_id=${id}&likes_user_id=${user?.id}`).then((res) => {
-                    setLiked(false);
-                    return res.data;
-                });
+                await makeRequest.delete(`likes/?likes_post_id=${id}&likes_user_id=${user?.id}`);
             } else {
-                return await makeRequest.post("likes/", newLikes).then((res) => res.data);
+                await makeRequest.post("likes/", {
+                    likes_user_id: user?.id,
+                    likes_post_id: id
+                });
             }
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['likes', id] });
+        },
+        onError: (error: any) => {
+            if (error?.response?.status === 409) {
+                alert("Você já curtiu este post!"); // ou usar toast
+            } else {
+                alert("Erro ao curtir, tente novamente.");
+            }
         }
-    });
-
+    });    
+    
     const shareLikes = () => {
-        likesMutation.mutate({
-            likes_user_id: user?.id,
-            likes_post_id: id
-        }); 
+        if (!user) return;
+        likesMutation.mutate();
     };
 
     const commentQuery = useQuery<IComments[] | undefined>({

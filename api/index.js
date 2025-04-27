@@ -6,6 +6,7 @@ import userRouter from "./routes/user.js";
 import authRouter from "./routes/auth.js";
 import postRouter from "./routes/post.js";
 import likesRouter from "./routes/likes.js";
+import friendshipRouter from "./routes/friendship.js";
 import commentRouter from "./routes/comment.js";
 import uploadRouter from "./routes/upload.js";
 
@@ -24,6 +25,7 @@ app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/post", postRouter);
 app.use("/api/likes", likesRouter);
+app.use("/api/friendship", friendshipRouter);
 app.use("/api/comment", commentRouter);
 app.use("/api/upload", uploadRouter);
 
