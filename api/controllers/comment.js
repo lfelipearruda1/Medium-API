@@ -1,6 +1,6 @@
-import db from "../connect.js";
+import { createCommentDb, getCommentsByPostId } from "../models/comment.js";
 
-export const creatComment = async (req, res) => {
+export const createComment = async (req, res) => {
   const { comment_desc, post_id, comment_user_id } = req.body;
 
   if (!comment_desc) {
@@ -8,30 +8,20 @@ export const creatComment = async (req, res) => {
   }
 
   try {
-    await db.query(
-      `INSERT INTO comments (comment_desc, post_id, comment_user_id) VALUES ($1, $2, $3)`,
-      [comment_desc, post_id, comment_user_id]
-    );
-
+    await createCommentDb(comment_desc, post_id, comment_user_id);
     return res.status(200).json({ msg: "Comentário enviado com sucesso." });
   } catch (error) {
+    console.error("Erro ao criar comentário:", error);
     return res.status(500).json({ msg: "Erro no servidor, tente novamente mais tarde." });
   }
 };
 
-export const getComment = async (req, res) => {
+export const getComments = async (req, res) => {
   try {
-    const { rows } = await db.query(
-      `SELECT c.*, u.username, u."userImg"
-       FROM comments AS c
-       JOIN "user" AS u ON u.id = c.comment_user_id
-       WHERE c.post_id = $1
-       ORDER BY c.created_at DESC`,
-      [req.query.post_id]
-    );
-
-    return res.status(200).json({ data: rows });
+    const comments = await getCommentsByPostId(req.query.post_id);
+    return res.status(200).json({ data: comments });
   } catch (error) {
-    return res.status(500).json({ msg: "Erro interno no servidor.", error: error.message });
+    console.error("Erro ao buscar comentários:", error);
+    return res.status(500).json({ msg: "Erro interno no servidor." });
   }
 };
